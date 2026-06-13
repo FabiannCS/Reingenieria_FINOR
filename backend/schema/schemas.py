@@ -26,4 +26,4 @@ class ClienteResponse(ClienteBase):
     estado: str
 
     class Config:
-        from_attribute = True
+        orm_mode = True
