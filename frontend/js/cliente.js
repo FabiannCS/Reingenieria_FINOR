@@ -29,11 +29,11 @@ async function cargarClientes() {
         });
 
         if ($.fn.DataTable.isDataTable('#tablaClientes')){
-            $('#tablaClientes'),DataTable().destroy();
+            $('#tablaClientes').DataTable().destroy();
         }
         else{
             $('#tablaClientes').DataTable({
-                Language: {
+                language: {
                     url: 'https://cdn.datatables.net/plug-ins/1.13.7/i18n/es-ES.json'
                 }
             });
@@ -41,8 +41,46 @@ async function cargarClientes() {
     }
     catch (error) {
         console.error('Error al cargar los clientes:', error);
-        alert('Revisar el servicdor o conexion')
+        alert('Revisar el servidor o conexion')
     }
 }
 
 document.addEventListener('DOMContentLoaded', cargarClientes);
+
+//formulario para nuevo cliente
+const modalCliente = new bootstrap.Modal(document.getElementById('modalCliente'));
+const formCliente = document.getElementById('formCliente');
+
+document.getElementById('nuevoCliente').addEventListener('click', () => {
+
+    formCliente.reset();
+    document.getElementById('clienteId').value = "";
+    document.getElementById('modalTitulo').innerText = "Nuevo Cliente";
+    
+    modalCliente.show();
+});
+
+document.getElementById('btnGuardar').addEventListener('click', async () => {
+    
+    const nuevoCliente = {
+        nombre: document.getElementById('nombre').value,
+        apellido: document.getElementById('apellido').value,
+        telefono: document.getElementById('telefono').value,
+        fechaRegistro: document.getElementById('date').value,
+        estado: document.getElementById('estado').value
+    };
+
+    try {
+        
+        await axios.post(API_URL, nuevoCliente);
+        
+        modalCliente.hide();
+        
+        await cargarClientes();
+        
+
+    } catch (error) {
+        console.error("Error al guardar el cliente:", error);
+        alert("Hubo un error al intentar guardar los datos");
+    }
+});
