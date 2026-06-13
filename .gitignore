@@ -2,6 +2,7 @@
 /backend/__pycache__/
 /backend/*.py[cod]
 /backend/.env
+__pycache__
 
 # Ignorar archivos de sistema
 .DS_Store
