@@ -65,6 +65,8 @@ def actualizar_cliente(cliente_id: int, cliente_actualizado: ClienteUpdate, db: 
         cliente.apellido = cliente_actualizado.apellido
     if cliente_actualizado.telefono is not None:
         cliente.telefono = cliente_actualizado.telefono
+    if cliente_actualizado.fechaRegistro is not None:
+        cliente.fechaRegistro = cliente_actualizado.fechaRegistro
     if cliente_actualizado.estado is not None:
         cliente.estado = cliente_actualizado.estado
 
@@ -81,7 +83,9 @@ def eliminar_cliente(cliente_id: int, db: Session = Depends(get_db)):
     if not cliente:
         raise HTTPException(status_code=404, detail="Cliente no encontrado")
     
-    db.delete(cliente)
+    cliente.estado = 'Inactivo'
+
     db.commit()
-    
-    return {"mensaje": "Cliente eliminado exitosamente"}
+    db.refresh(cliente)
+
+    return {"mensaje": "Cliente desactivado exitosamente"}
