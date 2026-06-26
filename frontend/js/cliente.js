@@ -19,6 +19,16 @@ async function cargarClientes() {
             if (filtro === "Todos" || cliente.estado === filtro){
 
                 const bgColor = cliente.estado === 'activo' ? 'bg-success' : 'bg-danger';
+                let botonAction = '';
+                if (cliente.estado === 'activo'){
+                    botonAction = `<button class="btn btn-outline-danger btn-sm rounded-pill mx-1 shadow-sm" onclick="eliminarCliente(${cliente.id})" title="Desactivar">
+                            <i class="bi bi-trash3"></i>
+                        </button>`;
+                }else{
+                    botonAction = `<button class="btn btn-outline-success btn-sm rounded-pill mx-1 shadow-sm" onclick="activarCliente(${cliente.id})" title="Activar">
+                            <i class="bi bi-arrow-repeat"></i>
+                        </button>`;
+                }
 
                 const fila = `
                     <tr>
@@ -31,8 +41,10 @@ async function cargarClientes() {
                             <span class="badge ${bgColor}">${cliente.estado}</span>
                         </td>
                         <td>
-                            <button class="btn btn-warning btn-sm" onclick="editarCliente(${cliente.id})">Editar</button>
-                            <button class="btn btn-danger btn-sm" onclick="eliminarCliente(${cliente.id})">Eliminar</button>
+                            <button class="btn btn-outline-warning btn-sm rounded-pill mx-1 shadow-sm" onclick="editarCliente(${cliente.id})" title="Editar">
+                                <i class="bi bi-pencil-square"></i>
+                            </button>
+                            ${botonAction}
                     </td>
                 </tr>`;
                 tbody.innerHTML += fila;
@@ -48,12 +60,18 @@ async function cargarClientes() {
         }
         catch (error) {
             console.error('Error al cargar los clientes:', error);
+            Swal.fire({
+            icon: 'error',
+            title: 'Fallo de conexión',
+            text: 'No se pudo conectar con el servidor de FastAPI.'
+        });
     }
 }
 
 document.addEventListener('DOMContentLoaded', cargarClientes);
 //filtro dee estado
 document.getElementById('filtroEstado').addEventListener('change', cargarClientes);
+
 
 
 //formulario para nuevo cliente
@@ -85,11 +103,11 @@ document.getElementById('btnGuardar').addEventListener('click', async () => {
     try {
         if (id) {
             await axios.put(`${API_URL}/${id}`, clienteData);
-            alert("Cliente actualizado correctamente");
+            Swal.fire({ icon: 'success', title: 'Cliente actualizado', toast: true, position: 'top-end', showConfirmButton: false, timer: 3000 });
         }
         else {
             await axios.post(API_URL, clienteData);
-            alert("Cliente creado correctamente");
+            Swal.fire({ icon: 'success', title: 'Cliente creado correctamente', toast: true, position: 'top-end', showConfirmButton: false, timer: 3000 });
         }
 
         modalCliente.hide();
@@ -99,21 +117,33 @@ document.getElementById('btnGuardar').addEventListener('click', async () => {
         
     } catch (error) {
         console.error("Error al guardar el cliente:", error);
-        alert("Hubo un error al intentar guardar los datos");
+        Swal.fire({ icon: 'error', title: 'Error', text: 'Hubo un problema al guardar los datos' });
     }
 });
 
 //funcion para eliminar cliente
 async function eliminarCliente(id){
-    if(confirm("¿Seguro que quieres eliminar  este cliente?")){
+
+    const resultado = await Swal.fire({
+        title: '¿Estás seguro?',
+        text: "El cliente pasará a estado Inactivo",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#3085d6',
+        confirmButtonText: 'Sí, desactivar',
+        cancelButtonText: 'Cancelar'
+    });
+
+    if(resultado.isConfirmed){
         try {
             await axios.delete(`${API_URL}/${id}`);
-
             await cargarClientes();
+            Swal.fire('¡Desactivado!', 'El cliente ha sido desactivado.', 'success');
         }
         catch (error){
             console.error("Error al eliminar Cliente:", error);
-            alert("Hubo un error");
+            Swal.fire('Error', 'Hubo un error al intentar desactivar', 'error');
         }
     }
 }
@@ -137,5 +167,29 @@ async function editarCliente(id){
     catch (error){
         console.error("Error al obtener datos del Cliente:", error);
         alert("No se pudo cargar los datos del cliente");
+    }
+}
+
+async function activarCliente(id){
+    const resultado = await Swal.fire({
+        title: '¿Estás seguro?',
+        text: "El cliente pasará a estado Activo",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#28a745',
+        cancelButtonColor: '#6c757d',
+        confirmButtonText: 'Sí, activar',
+        cancelButtonText: 'Cancelar'
+    });
+
+    if(resultado.isConfirmed){
+        try {
+            await axios.put(`${API_URL}/${id}`, { estado: 'activo'})
+            await cargarClientes();
+        }
+        catch (error){
+            console.error("Error al activar cliente:", error);
+            Swal.fire('Error', 'Hubo un error al intentar activar el cliente', 'error');
+        }
     }
 }
