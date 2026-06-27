@@ -4,7 +4,7 @@ from routes.router import user
 from config.database import Base, engine
 from models import models
 
-Base.metadata.create_all(bind=engine)
+#Base.metadata.create_all(bind=engine)
 
 app = FastAPI(title="API de clientes")
 
